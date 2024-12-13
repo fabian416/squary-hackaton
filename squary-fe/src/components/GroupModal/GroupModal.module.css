@@ -1,0 +1,113 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal {
+    background-color: whitesmoke;
+    border-radius: 25px;
+    padding: 30px;
+    width: 800px; /* Ancho fijo */
+    max-width: 90%; /* Asegura que no exceda el ancho de la pantalla */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    backdrop-filter: blur(14px);
+  }
+  
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Línea inferior sutil */
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+  }
+  
+  .modalTitle {
+    font-size: 2rem;
+    color: rgb(90, 90, 90); /* Color de texto */
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+  }
+  
+  .modalBody {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .modalBody label {
+    font-size: 1.5rem;
+    color: rgb(90, 90, 90);
+    margin-bottom: 10px;
+  }
+  
+  .modalBody input, .modalBody select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+    font-size: 1.2rem;
+  }
+  
+  .createButton {
+    padding: 15px 20px;
+    background-color: #FFA500;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: background-color 0.3s;
+  }
+  
+  .createButton:hover {
+    background-color: #e69500;
+  }
+  
+  .addButton {
+    padding: 12px 15px;
+    background-color: #FFA500;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: 10px;
+    transition: background-color 0.3s;
+  }
+  
+  .addButton:hover {
+    background-color: #e69500;
+  }
+  
+  .membersInputContainer {
+    display: flex;
+    align-items: center;
+  }
+  
+  .memberList {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px;
+  }
+  
+  .memberList li {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    font-size: 1.2rem;
+  }
+  

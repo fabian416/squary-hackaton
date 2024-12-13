@@ -1,0 +1,29 @@
+.dashboardContainer {
+  display: flex;
+  flex-direction: row; /* Sidebar a la izquierda, contenido a la derecha */
+  height: 100vh; /* Toda la altura de la pantalla */
+  width: 100%; /* Todo el ancho de la pantalla */
+  overflow: hidden; /* Evitar scroll */
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column; /* Los hijos se apilan verticalmente */
+  flex-grow: 1; /* Ocupar espacio restante verticalmente */
+  height: 100%; /* Asegura que ocupe toda la altura disponible */
+  background-color: #D9A673;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden; /* Sin scroll */
+}
+.topBar {
+  display: flex;
+  justify-content: flex-end; /* Alinea el botón a la derecha */
+  padding: 10px;
+}
+
+.content {
+  flex-grow: 1; /* Permite que el contenido se expanda */
+  display: flex;
+  flex-direction: column;
+}
