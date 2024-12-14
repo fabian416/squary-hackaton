@@ -35,7 +35,7 @@ import { Card } from "@/components/ui/card";
 interface GroupModalProps {
   show: boolean;
   handleClose: () => void;
-  createGroup: (groupName: string, members: string[], tokenAddress: string, signatureThreshold: string) => Promise<void>;
+  createGroup: (groupName: string, members: string[], tokenAddress: string) => Promise<void>;
   onGroupCreated: () => void;
 }
 
@@ -44,9 +44,7 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
   const [membersInput, setMembersInput] = useState('');
   const [members, setMembers] = useState<string[]>([]);
   const [tokenAddress, setTokenAddress] = useState('');
-  const [signatureThreshold, setSignatureThreshold] = useState('2');
   const { address } = useAccount();
-  const form = useForm();
 
   const isValidAddress = (address: string) => {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -69,13 +67,13 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!groupName || !tokenAddress || !signatureThreshold || members.length === 0) {
+    if (!groupName || !tokenAddress || members.length === 0) {
       alert('Please fill in all fields and add at least one member.');
       return;
     }
 
     const allMembers = [address, ...members].filter(Boolean) as string[];
-    await createGroup(groupName, allMembers, tokenAddress, signatureThreshold);
+    await createGroup(groupName, allMembers, tokenAddress);
     onGroupCreated();
     handleModalClose();
   };
@@ -85,7 +83,6 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
     setMembersInput('');
     setMembers([]);
     setTokenAddress('');
-    setSignatureThreshold('');
     handleClose();
   };
 

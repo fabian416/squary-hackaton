@@ -9,7 +9,7 @@ export const useCreateGroup = () => {
   const SQUARY_V2_CONTRACT_ADDRESS = APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.address;
   const SQUARY_V2_CONTRACT_ABI = APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.abi;
 
-  const createGroup = async (groupName: string, members: string[], tokenAddress: string, signatureThreshold: string) => {
+  const createGroup = async (groupName: string, members: string[], tokenAddress: string) => {
     if (!signer) {
       console.error('Signer is not available. Please connect a wallet.');
       return;
@@ -20,7 +20,7 @@ export const useCreateGroup = () => {
       const contract = new ethers.Contract(SQUARY_V2_CONTRACT_ADDRESS, SQUARY_V2_CONTRACT_ABI, signer);
 
       // Crear el grupo en el smart contract
-      const tx = await contract.createGroup(groupName, members, signatureThreshold, tokenAddress);
+      const tx = await contract.createGroup(groupName, members, tokenAddress);
       const receipt = await tx.wait(); // Esperar a que la transacción sea confirmada
       console.log('Grupo creado con éxito en el smart contract:', receipt);
 
@@ -39,7 +39,6 @@ export const useCreateGroup = () => {
       const groupData = {
         groupName,
         members,
-        signatureThreshold,
         tokenAddress,
       };
       await setDoc(doc(firestore, 'groups', groupId.toString()), groupData);
