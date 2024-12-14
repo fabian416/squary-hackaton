@@ -165,4 +165,11 @@ contract Squary {
         }
         return userGroups;
     }
+
+    function getGroupDetails(
+        bytes32 groupId
+    ) public view returns (string memory name, address[] memory members) {
+        Group storage group = groups[groupId];
+        return (group.name, group.members);
+    }
 }
