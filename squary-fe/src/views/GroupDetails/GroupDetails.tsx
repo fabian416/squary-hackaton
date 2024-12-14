@@ -36,28 +36,28 @@ const GroupDetails = () => {
   }, [groupId]);
 
   return (
-    <div className="flex flex-col gap-6 p-4 h-full">
+    <div className="flex flex-col h-full gap-6 p-4">
       {/* Opciones del grupo */}
       <GroupOptions
         groupId={groupId}
         groupName={groupName}
         onBalancesUpdate={updateBalances}
       />
-
+  
       {/* Contenedor de Expenses y Balances */}
-      <div className="grid grid-cols-2 gap-6 flex-grow">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
         {/* Expenses */}
-        <Card className="mb-6"> 
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <GroupExpenses groupId={groupId} />
+        <Card className="flex flex-col h-full">
+          <div className="bg-white p-4 rounded-lg shadow-sm flex-grow">
+            <GroupExpenses groupId={groupId} />
           </div>
         </Card>
-
+  
         {/* Balances */}
-        <Card className="mb-6"> 
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <GroupBalances balances={balances} />
-        </div>
+        <Card className="flex flex-col h-full">
+          <div className="bg-white p-4 rounded-lg shadow-sm flex-grow">
+            <GroupBalances balances={balances} />
+          </div>
         </Card>
       </div>
     </div>

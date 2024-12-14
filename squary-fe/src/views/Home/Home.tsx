@@ -24,19 +24,19 @@ const Home = () => {
     }, []);
 
     return  <div>
-    <ParticleBackground />
-    <div className={styles.navbar}>
-      <div className={styles.navbar_container}>
-        <div className={styles.navbar_logo}>
-        <img src="public/logo.png" />
-        </div>
-        <div className={styles.navbar_items}>
-        </div>
-        <div className={styles.navbar_button}>
-          <appkit-button />
+      <ParticleBackground />
+      <div className={styles.navbar}>
+        <div className={styles.navbar_container}>
+          <div className={styles.navbar_logo}>
+          <img src="public/logo.png" />
+          </div>
+          <div className={styles.navbar_items}>
+          </div>
+          <div className={styles.navbar_button}>
+            <appkit-button />
+          </div>
         </div>
       </div>
-    </div>
         {isMobile ? 
           <div style={{ position: 'absolute', top: '20%', left: '0%', color: '#000', textAlign: 'center' }}>
             <div className={styles.container_mobile}>

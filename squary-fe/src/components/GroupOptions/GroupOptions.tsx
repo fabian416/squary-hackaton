@@ -213,54 +213,22 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
       <CardContent className="flex justify-between gap-4">
           {/* Add Expense Button */}
           <Button
-            variant="default"
-            size="lg"
+            className="w-full"
             onClick={handleOpenExpenseModal}
-            className="bg-orange-400 hover:bg-orange-500 text-white w-full h-14 flex items-center justify-center font-medium rounded-md"
           >
             Add Expense
           </Button>
 
           {/* Start Settle Button */}
           <Button
-          variant="default"
-          size="lg"
-          onClick={handleOpenSettleModal}
-          className={cn(
-            "bg-orange-400 hover:bg-orange-500 text-white w-full h-14 flex items-center justify-center font-medium rounded-md",
-            hasActiveProposal ? "bg-gray-400 cursor-not-allowed" : "bg-orange-400"
-          )}
-          disabled={hasActiveProposal && userHasSigned}
-        >
-          {hasActiveProposal ? (userHasSigned ? "Signed" : "Sign") : "Start Settle"}
-        </Button>
-
-          {/* Deposit Button */}
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => {
-              setModalActionType("Deposit");
-              setShowWithdrawDepositModal(true);
-            }}
-            className="border-orange-500 text-orange-500 hover:bg-orange-100 hover:text-orange-600 w-full h-14 flex items-center justify-center font-medium rounded-md"
+            className="w-full"
+            onClick={handleOpenSettleModal}
+            disabled={hasActiveProposal && userHasSigned}
           >
-            Deposit
+          {hasActiveProposal ? (userHasSigned ? "Signed" : "Sign") : "Pay Debts"}
           </Button>
 
-          {/* Withdraw Button */}
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => {
-              setModalActionType("Withdraw");
-              setShowWithdrawDepositModal(true);
-            }}
-            className="border-orange-500 text-orange-500 hover:bg-orange-100 hover:text-orange-600 w-full h-14 flex items-center justify-center font-medium rounded-md"
-          >
-            Withdraw
-          </Button>
-        </CardContent>
+      </CardContent>
   
       {/* Expense Modal */}
       {showExpenseModal && currentUser && (
@@ -286,15 +254,6 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
         />
       )}
   
-      {/* Withdraw/Deposit Modal */}
-      {showWithdrawDepositModal && (
-        <WithdrawDepositModal
-          show={showWithdrawDepositModal}
-          handleClose={() => setShowWithdrawDepositModal(false)}
-          actionType={modalActionType}
-          handleAction={handleAction}
-        />
-      )}
     </Card>
   );
 };

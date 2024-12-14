@@ -119,12 +119,11 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ show, handleClose, addExpen
               value={description}
               onChange={handleDescriptionChange}
               placeholder="Enter description"
-              className="text-lg p-3.5 h-12"
             />
           </div>
           {/* Amount Input */}
           <div>
-            <label htmlFor="amount" className="block text-lg font-medium text-gray-700">
+            <label htmlFor="amount">
               Amount:
             </label>
             <Input
@@ -133,7 +132,6 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ show, handleClose, addExpen
               value={amount}
               onChange={handleAmountChange}
               placeholder="Enter amount"
-              className="text-lg p-3.5 h-12"
             />
           </div>
   
@@ -146,7 +144,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ show, handleClose, addExpen
               id="paidBy"
               value={payer}
               onChange={handlePayerChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3 h-12 truncate"
+              className="mt-1 block w-full text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3 h-12 truncate"
             >
               {groupMembers.map((member, index) => (
                 <option key={index} value={member} className="text-base text-gray-700">
@@ -170,9 +168,6 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ show, handleClose, addExpen
                     type="button"
                     variant={selectedMembers.includes(member) ? 'default' : 'outline'}
                     onClick={() => handleMemberSelect(member)}
-                    className={`${
-                      selectedMembers.includes(member) ? 'bg-green-500 text-white' : ''
-                    } text-lg py-3 px-6`}
                   >
                     <ENSName address={member} />
                   </Button>
@@ -189,7 +184,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ show, handleClose, addExpen
               parseFloat(amount) <= 0 ||
               selectedMembers.length === 0
             }
-            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium text-lg py-4 h-14 "
+            className="w-full"
           >
             Add Expense
           </Button>

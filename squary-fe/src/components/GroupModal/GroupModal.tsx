@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import styles from './GroupModal.module.css';
 import { useAccount } from 'wagmi'; 
+import { Button } from '../ui/button';
 
 interface GroupModalProps {
   show: boolean;
@@ -68,17 +69,29 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
     }
   }, [members, signatureThreshold]);
 
+  useEffect(() => {
+    if (show) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  
+    return () => {
+      document.body.style.overflow = "auto"; // Limpia el estilo al desmontar
+    };
+  }, [show]);
+
   return (
     <Modal
       isOpen={show}
       onRequestClose={handleModalClose}
-      shouldCloseOnOverlayClick={false}
+      shouldCloseOnOverlayClick={true}
       className={styles.modal}
       overlayClassName={styles.modalOverlay}
     >
-      <div className={styles.modalHeader}>
+      <div className={styles.modalHeader} onClick={(e) => e.stopPropagation()} >
         <h2 className={styles.modalTitle}>Create a New Group</h2>
-        <button className={styles.closeButton} onClick={handleModalClose}>×</button>
+        <Button variant="secondary"onClick={handleModalClose}>X</Button>
       </div>
       <form onSubmit={handleSubmit} className={styles.modalBody}>
         <div>
@@ -87,6 +100,7 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
             type="text"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
+            className="m-3"
           />
         </div>
         <div>
@@ -97,8 +111,9 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
               value={membersInput}
               onChange={(e) => setMembersInput(e.target.value)}
               placeholder="Enter wallet addresses separated by commas"
+              className="mr-3 w-full"
             />
-            <button type="button" className={styles.addButton} onClick={handleAddMembers}>+</button>
+            <Button type="button" onClick={handleAddMembers}>+</Button>
           </div>
           <ul className={styles.memberList}>
             {members.map((member, index) => (
@@ -111,6 +126,7 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
           <select
             value={tokenAddress}
             onChange={(e) => setTokenAddress(e.target.value)}
+            className="m-3"
           >
             <option value="">Select a currency</option>
             <option value="0x87B6F2A7A9e371f93bBbE75926400699202B8a58">USDC</option>
@@ -123,6 +139,7 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
           <select
             value={signatureThreshold}
             onChange={handleThresholdChange}
+            className="m-3"
           >
             <option value="">Select threshold</option>
             {Array.from({ length: members.length + 1 }, (_, i) => i + 1).map(num => (
@@ -130,7 +147,7 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
             ))}
           </select>
         </div>
-        <button type="submit" className={styles.createButton}>Create Group</button>
+        <Button type="submit">Create Group</Button>
       </form>
     </Modal>
   );

@@ -77,7 +77,7 @@ const GroupExpenses: React.FC<GroupExpensesProps> = ({ groupId }) => {
             <TableHead>Shared With</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="text-black">
           {expenses.map((expense, index) => (
             <TableRow key={index}>
               <TableCell>{expense.description}</TableCell>
