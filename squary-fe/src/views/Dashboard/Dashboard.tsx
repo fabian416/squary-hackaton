@@ -3,6 +3,7 @@ import Sidebar from "../../components/SideBar/SideBar";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useUser } from "../../utils/UserContext"; 
 import { useCreateGroup } from "../../hooks/useCreateGroup";
+import styles from '../Home/Home.module.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,22 +16,20 @@ const Dashboard = () => {
     }
   }, [isConnected, navigate]);
 
-  return (
+  return ( 
+  <div>
+ 
     <div className="flex h-screen w-screen bg-[#F3D9B1]">
     {/* Sidebar */}
-    <Sidebar createGroup={createGroup} currentUser={currentUser} />
+   
     {/* Main Content */}
     <div className="flex flex-col flex-grow overflow-auto">
       {/* Top Bar */}
       <div className="flex justify-end p-4">
       <appkit-button />
       </div>
-      {/* Outlet para el contenido */}
-      <div className="flex-grow p-6">
-        <Outlet />
-      </div>
     </div>
-  </div>
+  </div></div>
   );
 };
 

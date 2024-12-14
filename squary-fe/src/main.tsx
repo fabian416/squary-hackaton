@@ -10,6 +10,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { baseSepolia } from "@reown/appkit/networks";
 
+
 // 1. Setup QueryClient
 const queryClient = new QueryClient();
 

@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { UserProvider } from './utils/UserContext'; 
+import { UserProvider, useUser } from './utils/UserContext'; 
 import { Toaster } from "react-hot-toast";
 import Home from './views/Home/Home';
 import Dashboard from './views/Dashboard/Dashboard';
@@ -7,6 +8,9 @@ import GeneralPanel from './views/GeneralPanel/GeneralPanel';
 import GroupDetails from './views/GroupDetails/GroupDetails';
 import FriendDetails from './views/FriendDetails/FriendDetails';
 import { initializeAppKit } from './appiKitConfig';
+import { SidebarTrigger, Sidebar, SidebarProvider } from '@/components/ui/sidebar';
+import { useAccount } from 'wagmi';
+import { AppSidebar } from './views/Sidebar/Sidebar';
 
 const router = createBrowserRouter([
   {
@@ -25,12 +29,22 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  // Inicializa la configuración de AppKit
+  const { isConnected } = useAccount();
   initializeAppKit();
+  
   return (
       <UserProvider>
         <Toaster/>
         <RouterProvider router={router} />
+        {isConnected &&
+          <SidebarProvider>
+            <Sidebar />
+            <main>
+              <SidebarTrigger />
+              <AppSidebar />
+            </main>
+          </SidebarProvider>
+        }
       </UserProvider>
   );
 }
