@@ -129,12 +129,9 @@
   
   .image img {
     max-width: 100%;
-    min-width: calc(25em + 4vw);
+    min-width: calc(15em + 4vw);
     height: auto;
     object-fit: contain;
-    border-radius: 10px; /* Opcional: Bordes redondeados */
-    border: 5px solid transparent; /* Espacio para el borde animado */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra opcional */
   }
   
 
@@ -175,10 +172,8 @@
   }
   
   .image_mobile img {
-    max-width: 100%;
+    max-width: calc(18em + 2vw);
+    height: auto;
     object-fit: contain;
-    border-radius: 10px; /* Opcional: Bordes redondeados */
-    border: 5px solid transparent; /* Espacio para el borde animado */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra opcional */
   }
   

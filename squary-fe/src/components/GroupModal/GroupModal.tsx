@@ -103,7 +103,7 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
       <DialogTrigger className="w-full">
         <Button className="w-full">Add</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-4xl w-full">
         <DialogHeader>
           <DialogTitle>Create a New Group</DialogTitle>
           <DialogDescription>

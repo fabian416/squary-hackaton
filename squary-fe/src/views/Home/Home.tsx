@@ -38,13 +38,13 @@ const Home = () => {
         </div>
       </div>
         {isMobile ? 
-          <div style={{ position: 'absolute', top: '20%', left: '0%', color: '#000', textAlign: 'center' }}>
+          <div style={{ position: 'absolute', top: '10%', left: '0%', color: '#000', textAlign: 'center' }}>
             <div className={styles.container_mobile}>
               <div className={styles.content_mobile}>
                 <h1>Share moments, <br/> split expenses, <br/> pay smarter.</h1>
               </div>
               <div className={styles.image_mobile}>
-                <img src="login-image.jpg" /> 
+                <img src="login-phone-image.png" /> 
               </div>
               <div className={styles.content_mobile}>
                 <p>Make memories with your friends, and we’ll handle the rest.</p>
@@ -59,7 +59,7 @@ const Home = () => {
                 <p>Make memories with your friends, and we’ll handle the rest.</p>
               </div>  
               <div className={styles.image}>
-                <img src="login-image.jpg" /> 
+                <img src="login-phone-image.png" /> 
               </div>
             </div>
           </div>
