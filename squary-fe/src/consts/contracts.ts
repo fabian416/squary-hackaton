@@ -4,7 +4,7 @@ import DEV_ERC20_ABI from "../../src/abi/dev/ERC20.json"
 const DEVELOPMENT_CONFIGURATION = {
     contracts: {
       SQUARY_CONTRACT: {
-        address: "0x89B30D7807E2AC1Fad9de819d26C5A5f49d42ab6", // zk sync sepolia test Address
+        address: "0xc9963B02bF18678D5a76910F9BF8B32d50C55EE1", // zk sync sepolia test Address
         abi: DEV_SQUARY_ABI
       },
       USDT_CONTRACT: {
@@ -16,13 +16,19 @@ const DEVELOPMENT_CONFIGURATION = {
         abi: DEV_ERC20_ABI
       }
     },
-    chainId: 80002,
-    chainAmoy: {
-      chainId: 80002,
-      name: "Amoy",
-      currency: "MATIC",
-      explorerUrl: "https://www.oklink.com/amoy",
-      rpcUrl: "https://rpc-amoy.polygon.technology/",
+    chainzkSyncTestnet: {
+      chainId: 300,
+      name: "zksyncSepoliaTestnet",
+      currency: "ETH",
+      explorerUrl: "",
+      rpcUrl: "https://sepolia.era.zksync.dev",
+    },
+    chainMain: {
+      chainId: 324,
+      name: "zksyncSepoliaTestnet",
+      currency: "ETH",
+      explorerUrl: "https://mainnet.era.zksync.io",
+      rpcUrl: "",
     },
   };
 

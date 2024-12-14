@@ -141,8 +141,8 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
                   <SelectValue placeholder="Currency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0x87B6F2A7A9e371f93bBbE75926400699202B8a58">USDC</SelectItem>
-                  <SelectItem value="0xd0602be1b9c3ED0715Be5786AD34114D9Da737BD">USDT</SelectItem>
+                  <SelectItem value="0x7Bf4dC86937EB387807d09f935D3a5c3A2888119">USDC</SelectItem>
+                  <SelectItem value="0x04F2993B25AFDee6d9020d42cBAaD667FD35f458">USDT</SelectItem>
                   <SelectItem value="0x6B175474E89094C44Da98b954EedeAC495271d0F">DAI</SelectItem>
                 </SelectContent>
               </Select>
