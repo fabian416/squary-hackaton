@@ -85,7 +85,7 @@ export function AppSidebar({ currentUser }: SidebarProps) {
 
             <CollapsibleContent>
                 <SidebarGroupContent>
-                <Button className="w-full mt-1 mb-1" onClick={handleOpenModal}>Add</Button>
+                  <GroupModal show={showModal} handleClose={handleCloseModal} createGroup={createGroup} onGroupCreated={handleGroupCreated} />
                 </SidebarGroupContent>
              </CollapsibleContent>
 
@@ -132,7 +132,6 @@ export function AppSidebar({ currentUser }: SidebarProps) {
               ))}
           </SidebarGroup>
         </Collapsible>
-        <GroupModal show={showModal} handleClose={handleCloseModal} createGroup={createGroup} onGroupCreated={handleGroupCreated} />
         
       </SidebarContent>
     </Sidebar>

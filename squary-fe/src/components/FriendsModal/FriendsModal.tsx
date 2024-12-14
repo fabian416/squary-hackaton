@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Modal from 'react-modal';
 import styles from '../GroupOptions/SettleModal/SettleModal.module.css'; // Reuse styles
 import { Button } from '../ui/button';
 import {
@@ -11,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 interface FriendsModalProps {
   show: boolean;
@@ -29,7 +29,8 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ show, handleClose, addFrien
     }
 
     // Validate Ethereum address (basic check)
-    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address.trim().toLowerCase())) {
+      console.log(address);
       alert('Invalid Ethereum address.');
       return;
     }
@@ -49,33 +50,23 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ show, handleClose, addFrien
         <DialogHeader>
           <DialogTitle>Add Friend</DialogTitle>
           <DialogDescription>
-            
-            <div className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label>Nickname:</label>
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="Enter nickname"
-                  className="m-3 text-black"
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Ethereum Address:</label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Enter Ethereum address"
-                  className="m-3 text-black"
-                />
-              </div>
-              <div className="m-3"></div>
-              <Button onClick={handleAddFriend}>
+              <Label htmlFor="nickname"></Label>
+              <Input
+                id="nickname"
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="Enter Nickname"
+                className="my-4"
+              />
+              <Label htmlFor="address"></Label>
+              <Input
+                id="address"
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter Ethereum address"
+                className="my-4"
+              />
+              <Button onClick={handleAddFriend} className="w-full">
                 Add Friend
               </Button>
-            </div>
           </DialogDescription>
         </DialogHeader>
       </DialogContent>

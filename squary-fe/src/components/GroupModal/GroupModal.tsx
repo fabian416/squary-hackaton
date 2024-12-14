@@ -3,6 +3,34 @@ import Modal from 'react-modal';
 import styles from './GroupModal.module.css';
 import { useAccount } from 'wagmi'; 
 import { Button } from '../ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Card } from "@/components/ui/card";
 
 interface GroupModalProps {
   show: boolean;
@@ -16,8 +44,9 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
   const [membersInput, setMembersInput] = useState('');
   const [members, setMembers] = useState<string[]>([]);
   const [tokenAddress, setTokenAddress] = useState('');
-  const [signatureThreshold, setSignatureThreshold] = useState('');
+  const [signatureThreshold, setSignatureThreshold] = useState('2');
   const { address } = useAccount();
+  const form = useForm();
 
   const isValidAddress = (address: string) => {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -39,6 +68,7 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
     if (!groupName || !tokenAddress || !signatureThreshold || members.length === 0) {
       alert('Please fill in all fields and add at least one member.');
       return;
@@ -59,16 +89,6 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
     handleClose();
   };
 
-  const handleThresholdChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSignatureThreshold(e.target.value);
-  };
-
-  useEffect(() => {
-    if (Number(signatureThreshold) > members.length + 1) {
-      setSignatureThreshold('');
-    }
-  }, [members, signatureThreshold]);
-
   useEffect(() => {
     if (show) {
       document.body.style.overflow = "hidden";
@@ -82,74 +102,60 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
   }, [show]);
 
   return (
-    <Modal
-      isOpen={show}
-      onRequestClose={handleModalClose}
-      shouldCloseOnOverlayClick={true}
-      className={styles.modal}
-      overlayClassName={styles.modalOverlay}
-    >
-      <div className={styles.modalHeader} onClick={(e) => e.stopPropagation()} >
-        <h2 className={styles.modalTitle}>Create a New Group</h2>
-        <Button variant="secondary"onClick={handleModalClose}>X</Button>
-      </div>
-      <form onSubmit={handleSubmit} className={styles.modalBody}>
-        <div>
-          <label>Group Name:</label>
-          <input
-            type="text"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            className="m-3"
-          />
-        </div>
-        <div>
-          <label>Members:</label>
-          <div className={styles.membersInputContainer}>
-            <input
-              type="text"
-              value={membersInput}
-              onChange={(e) => setMembersInput(e.target.value)}
-              placeholder="Enter wallet addresses separated by commas"
-              className="mr-3 w-full"
-            />
-            <Button type="button" onClick={handleAddMembers}>+</Button>
-          </div>
-          <ul className={styles.memberList}>
-            {members.map((member, index) => (
-              <li key={index}>{member}</li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <label>Currency:</label>
-          <select
-            value={tokenAddress}
-            onChange={(e) => setTokenAddress(e.target.value)}
-            className="m-3"
-          >
-            <option value="">Select a currency</option>
-            <option value="0x87B6F2A7A9e371f93bBbE75926400699202B8a58">USDC</option>
-            <option value="0xd0602be1b9c3ED0715Be5786AD34114D9Da737BD">USDT</option>
-            <option value="0x6B175474E89094C44Da98b954EedeAC495271d0F">DAI</option>
-          </select>
-        </div>
-        <div>
-          <label>Signature Threshold:</label>
-          <select
-            value={signatureThreshold}
-            onChange={handleThresholdChange}
-            className="m-3"
-          >
-            <option value="">Select threshold</option>
-            {Array.from({ length: members.length + 1 }, (_, i) => i + 1).map(num => (
-              <option key={num} value={num}>{num}</option>
-            ))}
-          </select>
-        </div>
-        <Button type="submit">Create Group</Button>
-      </form>
-    </Modal>
+    <Dialog>
+      <DialogTrigger className="w-full">
+        <Button className="w-full">Add</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create a New Group</DialogTitle>
+          <DialogDescription>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <Label htmlFor="groupName"></Label>
+              <Input
+                id="groupName"
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Enter Group Name"
+                className="my-4"
+              />
+              <div className="flex items-center justify-center">
+                <Label htmlFor="members"></Label>
+                <Input
+                  id="members"
+                  onChange={(e) => setMembersInput(e.target.value)}
+                  placeholder="Enter Ethereum address"
+                  className="my-2"
+                />
+            
+                <Button type="button" onClick={handleAddMembers} className="ml-2">+</Button>
+              </div>
+              {members.length > 0 && 
+                <ul>
+                  {members.map((member, index) => (
+                    <Card className="p-3 my-2">
+                      <li key={index} className="ml-2">{member}</li>
+                    </Card>
+                  ))}
+                </ul>
+              }
+              <Label htmlFor="currency"></Label>
+              <Select onValueChange={(value) => setTokenAddress(value)}>
+                <SelectTrigger id="currency" className="w-full">
+                  <SelectValue placeholder="Currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0x87B6F2A7A9e371f93bBbE75926400699202B8a58">USDC</SelectItem>
+                  <SelectItem value="0xd0602be1b9c3ED0715Be5786AD34114D9Da737BD">USDT</SelectItem>
+                  <SelectItem value="0x6B175474E89094C44Da98b954EedeAC495271d0F">DAI</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button type="submit" className="w-full">Create Group</Button>
+              </form>
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   );
 };
 

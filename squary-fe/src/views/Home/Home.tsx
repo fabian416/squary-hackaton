@@ -28,7 +28,7 @@ const Home = () => {
       <div className={styles.navbar}>
         <div className={styles.navbar_container}>
           <div className={styles.navbar_logo}>
-          <img src="public/logo.png" />
+          <img src="logo.png" />
           </div>
           <div className={styles.navbar_items}>
           </div>

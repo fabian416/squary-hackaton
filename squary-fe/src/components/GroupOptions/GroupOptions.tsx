@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ExpenseModal from './ExpenseModal/ExpenseModal';
 import SettleModal from './SettleModal/SettleModal';
-import WithdrawDepositModal from './WithdrawDepositModal'; // Ensure this import exists
 import { firestore } from '../../firebaseConfig';
 import { doc, getDoc, collection, addDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { useEthersSigner } from '../../hooks/ethersHooks'; 
@@ -10,7 +9,6 @@ import { ethers } from 'ethers';
 import { useUser } from '../../utils/UserContext';
 import { success, error, loading, remove } from '../../utils/notificationUtils.tsx';
 import { Button } from "@/components/ui/button";
-import { cn } from "../../lib/utils";
 import {
   Card,
   CardContent,

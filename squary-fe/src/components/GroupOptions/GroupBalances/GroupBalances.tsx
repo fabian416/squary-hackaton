@@ -129,15 +129,13 @@ const GroupBalances: React.FC<GroupBalancesProps> = ({ balances }) => {
     };
   });
 
-  const availableBalances = processedBalances.filter((b) => b.available > 0);
   
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-xl font-bold">Balances</h2>
-      <Tabs defaultValue="available" className="w-full max-w-[600px] mx-auto">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="debts" className="w-full max-w-[600px] mx-auto">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="debts">Debts</TabsTrigger>
-          <TabsTrigger value="available">Available Balances</TabsTrigger>
         </TabsList>
 
         {/* Debts Section */}
@@ -156,29 +154,9 @@ const GroupBalances: React.FC<GroupBalancesProps> = ({ balances }) => {
               </Card>
             ))
           ) : (
-            <p className="text-muted-foreground">No debts found for this group.</p>
-          )}
-        </TabsContent>
-
-        {/* Available Balances Section */}
-        <TabsContent value="available">
-          {availableBalances.length > 0 ? (
-            availableBalances.map((balance) => (
-              <Card key={balance.id} className="border-green-500 mb-4">
-                <CardHeader>
-                  <CardTitle className="text-green-700">
-                    <ENSName address={balance.member} /> available:
-                  </CardTitle>
-                  <CardDescription className="text-orange-500">
-                    ${balance.available.toFixed(2)}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ))
-          ) : (
-            <p className="text-muted-foreground">
-              No available balances for this group.
-            </p>
+            <div className="grid place-items-center h-full m-3">
+              <p className="text-muted-foreground">No debts found for this group.</p>
+            </div>
           )}
         </TabsContent>
       </Tabs>
