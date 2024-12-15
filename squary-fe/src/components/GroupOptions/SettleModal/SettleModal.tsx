@@ -13,6 +13,7 @@ import { getChainId } from '@wagmi/core'
 import { wagmiConfig } from '../../../wagmi';
 import { useAccount } from 'wagmi';
 import { loading, remove } from '@/utils/notificationUtils';
+import { useEthersProvider } from '@/hooks/ethersHooks';
 
 interface Debt {
   debtor: string;
@@ -95,9 +96,27 @@ const SettleModal: React.FC<SettleModalProps> = ({
     const fetchExpensesAndCalculateDebts = async () => {
       const expensesSnapshot = await getDocs(collection(firestore, 'groups', groupId, 'expenses'));
       const expenses: Expense[] = expensesSnapshot.docs.map(doc => doc.data() as Expense);
+      const provider = useEthersProvider(); // Obtiene el proveedor de ethers.js
 
       const debts = calculateSimplifiedDebts(expenses);
       setSimplifiedDebts(debts);
+
+      const contract = new ethers.Contract(
+        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
+        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi,
+        provider
+      );
+
+      const finalDebts = await Promise.all(
+        debts.map(async (debt) => {
+          const isPaid = await contract.paid(groupId, debt.debtor, debt.creditor);
+          return { debt, isPaid };
+        })
+      );
+      const unpaidDebts = finalDebts.filter(({ isPaid }) => !isPaid).map(({ debt }) => debt);
+
+      console.log({unpaidDebts});
+      setSimplifiedDebts(unpaidDebts);
 
       // Convertir las deudas simplificadas a BigNumber
       const formattedDebts = debts.map(debt => ({

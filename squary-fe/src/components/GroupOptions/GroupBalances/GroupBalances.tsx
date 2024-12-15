@@ -17,6 +17,12 @@ import { calculateSimplifiedDebts } from '../SettleModal/SettleModal';
 import { firestore } from '../../../firebaseConfig';
 import { ENSName } from '../ExpenseModal/ExpenseModal';
 import { useAccount } from 'wagmi';
+import { ethers } from "ethers";
+import { APPLICATION_CONFIGURATION } from "../../../consts/contracts";
+import { getChainId } from '@wagmi/core'
+import { wagmiConfig } from '../../../wagmi';
+import { useEthersProvider } from '@/hooks/ethersHooks';
+import _ from 'lodash';
 
 // Apollo Client setup
 const client = new ApolloClient({
@@ -86,12 +92,14 @@ export const fetchBalances = async (groupId: string): Promise<Balance[]> => {
 
 const GroupBalances: React.FC<GroupBalancesProps> = ({ groupId }) => {
   const [simplifiedDebts, setSimplifiedDebts] = useState<Debt[]>([]);
+  const provider = useEthersProvider(); // Obtiene el proveedor de ethers.js
   const { address } = useAccount();
+  const chainId = getChainId(wagmiConfig);
 
   // Obtener gastos desde Firestore
   useEffect(() => {
     const expensesRef = collection(firestore, 'groups', groupId, 'expenses');
-    const unsubscribe = onSnapshot(expensesRef, (snapshot: QuerySnapshot<DocumentData>) => {
+    const unsubscribe = onSnapshot(expensesRef, async (snapshot: QuerySnapshot<DocumentData>) => {
       const fetchedExpenses: Expense[] = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -105,7 +113,25 @@ const GroupBalances: React.FC<GroupBalancesProps> = ({ groupId }) => {
       });
 
       const debts = calculateSimplifiedDebts(fetchedExpenses);
-      setSimplifiedDebts(debts);
+
+      const contract = new ethers.Contract(
+        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
+        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi,
+        provider
+      );
+
+      const finalDebts = await Promise.all(
+        debts.map(async (debt) => {
+          const isPaid = await contract.paid(groupId, debt.debtor, debt.creditor);
+          return { debt, isPaid };
+        })
+      );
+      const unpaidDebts = finalDebts
+        .filter(({ isPaid }) => !isPaid)
+        .map(({ debt }) => debt);
+
+      console.log(unpaidDebts);
+      setSimplifiedDebts(unpaidDebts);
     });
 
     return () => unsubscribe(); // Cleanup on unmount
