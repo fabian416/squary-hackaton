@@ -119,7 +119,6 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
                   placeholder="Enter Ethereum address"
                   className="my-2"
                 />
-            
                 <Button type="button" onClick={handleAddMembers} className="ml-2">+</Button>
               </div>
               {members.length > 0 && 
@@ -141,7 +140,6 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
                   <SelectItem value={SQUARY_USDT_CONTRACT}>USDT</SelectItem>
                 </SelectContent>
               </Select>
-
               <Button type="submit" className="w-full">Create Group</Button>
               </form>
           </DialogDescription>
