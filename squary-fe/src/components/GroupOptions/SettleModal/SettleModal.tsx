@@ -11,7 +11,8 @@ import { APPLICATION_CONFIGURATION } from '../../../consts/contracts';
 import { ENSName } from '../ExpenseModal/ExpenseModal';
 import { getChainId } from '@wagmi/core'
 import { wagmiConfig } from '../../../wagmi';
-import { hexlify, zeroPadValue } from "ethers";
+import { useAccount } from 'wagmi';
+import { loading, remove } from '@/utils/notificationUtils';
 
 interface Debt {
   debtor: string;
@@ -82,10 +83,12 @@ const SettleModal: React.FC<SettleModalProps> = ({
   groupId,
   currentUser,
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [simplifiedDebts, setSimplifiedDebts] = useState<Debt[]>([]);
-  const [groupCurrency, setGroupCurrency] = useState("");
+  const [totalDebt, setTotalDebt] = useState(0n);
   const signer = useEthersSigner(); 
   const chainId = getChainId(wagmiConfig);
+  const { address } = useAccount();
 
   // Obtener y calcular las deudas simplificadas al abrir el modal
   useEffect(() => {
@@ -96,6 +99,29 @@ const SettleModal: React.FC<SettleModalProps> = ({
       const debts = calculateSimplifiedDebts(expenses);
       setSimplifiedDebts(debts);
 
+      // Convertir las deudas simplificadas a BigNumber
+      const formattedDebts = debts.map(debt => ({
+        debtor: ethers.getAddress(debt.debtor),
+        creditor: ethers.getAddress(debt.creditor),
+        amount: ethers.parseUnits(Number(debt.amount).toFixed(18), 18),
+      }));
+    
+
+      const favorAmount = formattedDebts.reduce(
+        (sum, debt) => (debt.creditor === address ? sum + debt.amount : sum),
+        0n // Valor inicial como `bigint`
+      );
+      
+      const contraAmount = formattedDebts.reduce(
+        (sum, debt) => (debt.debtor === address ? sum + debt.amount : sum),
+        0n // Valor inicial como `bigint`
+      );
+
+      const debtAmount = contraAmount - favorAmount;
+      console.log(debtAmount);
+      setTotalDebt(debtAmount);
+      console.log("Total Debt Amount:", debtAmount);
+
       // Imprimir las deudas simplificadas
       console.log('Simplified debts:', debts);
     };
@@ -104,6 +130,7 @@ const SettleModal: React.FC<SettleModalProps> = ({
       fetchExpensesAndCalculateDebts();
     }
   }, [show, groupId]);
+  console.log({groupId});
     
   const handleProposeSettle = async () => {
     if (!signer) {
@@ -111,6 +138,8 @@ const SettleModal: React.FC<SettleModalProps> = ({
       return;
     }
     
+    setIsLoading(true);
+    let loadTx = loading("Loading, please wait...");
     try {
       const contract = new ethers.Contract(
         APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
@@ -128,7 +157,7 @@ const SettleModal: React.FC<SettleModalProps> = ({
       const formattedDebts = simplifiedDebts.map(debt => ({
         debtor: ethers.getAddress(debt.debtor),
         creditor: ethers.getAddress(debt.creditor),
-        amount: ethers.parseUnits(Number(debt.amount).toFixed(6), 6),
+        amount: ethers.parseUnits(Number(debt.amount).toFixed(18), 18),
       }));
     
       console.log("Formated Debts:", formattedDebts); // Imprimir las deudas simplificadas en consola
@@ -154,7 +183,6 @@ const SettleModal: React.FC<SettleModalProps> = ({
           APPLICATION_CONFIGURATION.contracts[chainId].USDT_CONTRACT.abi,
           signer
         );
-        
 
         const tx1 = await erc20Contract.approve(APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address, parsedAmount);
         console.log('Transaction sent:', tx1.hash);
@@ -182,6 +210,8 @@ const SettleModal: React.FC<SettleModalProps> = ({
     }
     // Cierra el modal automáticamente
     handleClose();
+    setIsLoading(false);
+    remove(loadTx);
   }
 
   return (
@@ -213,13 +243,14 @@ const SettleModal: React.FC<SettleModalProps> = ({
 
           {/* Action Button */}
           <Button
-          onClick={handleProposeSettle}
-          className={cn(
-            "w-full py-4 text-lg h-14 font-medium transition-all duration-200", // Base styles
-          )}
-        >
-          Pay
-        </Button>
+            onClick={handleProposeSettle}
+            className={cn(
+              "w-full py-4 text-lg h-14 font-medium transition-all duration-200", // Base styles
+            )}
+            disabled={totalDebt <= 0 || isLoading}
+          >
+            Pay
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

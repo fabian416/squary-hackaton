@@ -17,11 +17,8 @@ import {
 import { useUserGroups } from '../../hooks/useUserGroups'; // Importa tu hook
 import { Link } from "react-router-dom";
 import { useUser } from "@/utils/UserContext";
-import { Button } from "@/components/ui/button";
 import GroupModal from '@/components/GroupModal/GroupModal';
 import FriendsModal from '@/components/FriendsModal/FriendsModal';
-import { doc, setDoc } from 'firebase/firestore';
-import { firestore,  } from '../../firebaseConfig';
 import { useCreateGroup } from "@/hooks/useCreateGroup";
 
 interface SidebarProps {
@@ -29,36 +26,14 @@ interface SidebarProps {
 }
 
 export function AppSidebar({ currentUser }: SidebarProps) {
-  const [showModal, setShowModal] = useState(false);
-  const [showFriendsModal, setShowFriendsModal] = useState(false); // New state for Friends modal
   const { groups, fetchGroups } = useUserGroups(); // Usa tu hook para obtener los grupos
   const createGroup = useCreateGroup();
   const { aliases } = useUser();
-
-  const handleCloseFriendsModal = () => setShowFriendsModal(false);
-  const handleAddFriend = async (address: string, nickname: string) => {
-    if (!currentUser) {
-      console.error("currentUser is null. Cannot add friend.");
-      return;
-    }
-  
-    try {
-      const userRef = doc(firestore, 'friends', currentUser); // currentUser es seguro aquí
-      await setDoc(userRef, { [address]: { nickname } }, { merge: true });
-      alert('Friend added successfully!');
-    } catch (error) {
-      console.error('Error adding friend:', error);
-    }
-  };
-
 
   useEffect(() => {
     fetchGroups(); // Carga los grupos cuando el componente se monta
   }, [fetchGroups]);
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
 
   const handleGroupCreated = () => {
     fetchGroups(); // Actualiza la lista de grupos cuando se crea un nuevo grupo
@@ -80,7 +55,7 @@ export function AppSidebar({ currentUser }: SidebarProps) {
 
             <CollapsibleContent>
                 <SidebarGroupContent>
-                  <GroupModal show={showModal} handleClose={handleCloseModal} createGroup={createGroup} onGroupCreated={handleGroupCreated} />
+                  <GroupModal createGroup={createGroup} onGroupCreated={handleGroupCreated} />
                 </SidebarGroupContent>
              </CollapsibleContent>
 
@@ -109,11 +84,7 @@ export function AppSidebar({ currentUser }: SidebarProps) {
 
             <CollapsibleContent>
                 <SidebarGroupContent className="w-full">
-                <FriendsModal
-                  show={showFriendsModal}
-                  handleClose={handleCloseFriendsModal}
-                  addFriend={handleAddFriend}
-                />
+                <FriendsModal currentUser={currentUser} />
                 </SidebarGroupContent>
              </CollapsibleContent>
 

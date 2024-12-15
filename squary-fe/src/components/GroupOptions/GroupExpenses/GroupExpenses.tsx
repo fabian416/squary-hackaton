@@ -36,8 +36,7 @@ const GroupExpenses: React.FC<GroupExpensesProps> = ({ groupId }) => {
         } as Expense;
       });
 
-      // Filtrar los gastos no settleados
-      setExpenses(fetchedExpenses.filter((expense) => !expense.settled));
+      setExpenses(fetchedExpenses);
     });
 
     return () => unsubscribe(); // Cleanup on unmount

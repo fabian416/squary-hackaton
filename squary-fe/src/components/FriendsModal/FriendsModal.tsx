@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import styles from '../GroupOptions/SettleModal/SettleModal.module.css'; // Reuse styles
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -11,16 +10,32 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { doc, setDoc } from 'firebase/firestore';
+import { firestore,  } from '../../firebaseConfig';
 
 interface FriendsModalProps {
-  show: boolean;
-  handleClose: () => void;
-  addFriend: (address: string, nickname: string) => void;
+  currentUser: any;
 }
 
-const FriendsModal: React.FC<FriendsModalProps> = ({ show, handleClose, addFriend }) => {
+const FriendsModal: React.FC<FriendsModalProps> = ({ currentUser }) => {
   const [nickname, setNickname] = useState('');
   const [address, setAddress] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+
+  const addFriend = async (address: string, nickname: string) => {
+    if (!currentUser) {
+      console.error("currentUser is null. Cannot add friend.");
+      return;
+    }
+  
+    try {
+      const userRef = doc(firestore, 'friends', currentUser); // currentUser es seguro aquí
+      await setDoc(userRef, { [address]: { nickname } }, { merge: true });
+      alert('Friend added successfully!');
+    } catch (error) {
+      console.error('Error adding friend:', error);
+    }
+  };
 
   const handleAddFriend = () => {
     if (!nickname || !address) {
@@ -38,11 +53,13 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ show, handleClose, addFrien
     addFriend(address, nickname);
     setNickname('');
     setAddress('');
-    handleClose();
+    setIsOpen(false);
   };
 
+  
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger className="w-full">
         <Button className="w-full">Add</Button>
       </DialogTrigger>

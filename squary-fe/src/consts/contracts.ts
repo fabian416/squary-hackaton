@@ -5,7 +5,7 @@ const DEVELOPMENT_CONFIGURATION = {
     contracts: {
       300: {
         SQUARY_CONTRACT: {
-          address: "0xbae229a38808109464871B1c8E3e75aCB68D619A", // zk sync sepolia test Address
+          address: "0xC0aafBb677761D3Fc66ee86f6B06A2d3548d7DC2", // zk sync sepolia test Address
           abi: DEV_SQUARY_ABI
         },
         USDT_CONTRACT: {
@@ -19,7 +19,7 @@ const DEVELOPMENT_CONFIGURATION = {
       },
       324: {
         SQUARY_CONTRACT: {
-          address: "0xbae229a38808109464871B1c8E3e75aCB68D619A", // zk sync sepolia test Address
+          address: "0xC0aafBb677761D3Fc66ee86f6B06A2d3548d7DC2", // zk sync sepolia test Address
           abi: DEV_SQUARY_ABI
         },
         USDT_CONTRACT: {

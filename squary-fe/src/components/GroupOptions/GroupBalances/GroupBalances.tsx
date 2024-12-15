@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
-import { ethers } from 'ethers';
-import { useEnsName } from 'wagmi';
-import { useUser } from '../../../utils/UserContext';
-import { sepolia } from 'viem/chains';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, DocumentData, QuerySnapshot, onSnapshot } from 'firebase/firestore';
 import {
   Tabs,
   TabsContent,
@@ -20,6 +16,7 @@ import {
 import { calculateSimplifiedDebts } from '../SettleModal/SettleModal';
 import { firestore } from '../../../firebaseConfig';
 import { ENSName } from '../ExpenseModal/ExpenseModal';
+import { useAccount } from 'wagmi';
 
 // Apollo Client setup
 const client = new ApolloClient({
@@ -87,33 +84,31 @@ export const fetchBalances = async (groupId: string): Promise<Balance[]> => {
   }
 };
 
-const GroupBalances: React.FC<GroupBalancesProps> = ({ balances, groupId }) => {
-  const [processedBalances, setProcessedBalances] = useState<ProcessedBalance[]>([]);
+const GroupBalances: React.FC<GroupBalancesProps> = ({ groupId }) => {
   const [simplifiedDebts, setSimplifiedDebts] = useState<Debt[]>([]);
+  const { address } = useAccount();
 
+  // Obtener gastos desde Firestore
   useEffect(() => {
-    console.log("Balances received in GroupBalances:", balances);
-    const formattedBalances = balances.map((balance) => {
-      const rawBalance = parseFloat(ethers.formatUnits(balance.balance, 6));
-      return {
-        ...balance,
-        rawBalance,
-      };
-    });
-    setProcessedBalances(formattedBalances);
-    console.log("Processed balances updated:", formattedBalances);
-  }, [balances]);
+    const expensesRef = collection(firestore, 'groups', groupId, 'expenses');
+    const unsubscribe = onSnapshot(expensesRef, (snapshot: QuerySnapshot<DocumentData>) => {
+      const fetchedExpenses: Expense[] = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          amount: data.amount,
+          description: data.description,
+          paidBy: data.paidBy,
+          sharedWith: data.sharedWith,
+          settled: data.settled,
+          timestamp: data.timestamp,
+        } as Expense;
+      });
 
-  useEffect(() => {
-    const fetchExpensesAndCalculateDebts = async () => {
-      const expensesSnapshot = await getDocs(collection(firestore, 'groups', groupId, 'expenses'));
-      const expenses: Expense[] = expensesSnapshot.docs.map(doc => doc.data() as Expense);
-
-      const debts = calculateSimplifiedDebts(expenses);
+      const debts = calculateSimplifiedDebts(fetchedExpenses);
       setSimplifiedDebts(debts);
-    };
+    });
 
-    fetchExpensesAndCalculateDebts();
+    return () => unsubscribe(); // Cleanup on unmount
   }, [groupId]);
   
   return (
@@ -128,9 +123,9 @@ const GroupBalances: React.FC<GroupBalancesProps> = ({ balances, groupId }) => {
         <TabsContent value="debts">
           {simplifiedDebts.length > 0 ? (
             simplifiedDebts.map((balance) => (
-              <Card key={`${balance.debtor}-${balance.amount}`} className="border-red-500 mb-4">
+              <Card key={`${balance.debtor}-${balance.amount}`} className={balance.debtor == address ? "border-red-500 mb-4" : "border-green-500 mb-4"}>
                 <CardHeader>
-                  <CardTitle className="text-red-700">
+                  <CardTitle className={balance.debtor == address ? "border-red-700" : "border-green-700"}>
                     <ENSName address={balance.debtor} /> owes <ENSName address={balance.creditor} />:
                   </CardTitle>
                   <CardDescription>

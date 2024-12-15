@@ -26,17 +26,16 @@ import { getChainId } from '@wagmi/core'
 import { wagmiConfig } from '../../wagmi';
 
 interface GroupModalProps {
-  show: boolean;
-  handleClose: () => void;
   createGroup: (groupName: string, members: string[], tokenAddress: string) => Promise<void>;
   onGroupCreated: () => void;
 }
 
-const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup, onGroupCreated }) => {
+const GroupModal: React.FC<GroupModalProps> = ({ createGroup, onGroupCreated }) => {
   const [groupName, setGroupName] = useState('');
   const [membersInput, setMembersInput] = useState('');
   const [members, setMembers] = useState<string[]>([]);
   const [tokenAddress, setTokenAddress] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
   const { address } = useAccount();
   const chainId = getChainId(wagmiConfig);
   const SQUARY_USDT_CONTRACT = APPLICATION_CONFIGURATION.contracts[chainId].USDT_CONTRACT.address;
@@ -79,23 +78,11 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
     setMembersInput('');
     setMembers([]);
     setTokenAddress('');
-    handleClose();
+    setIsOpen(false);
   };
 
-  useEffect(() => {
-    if (show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  
-    return () => {
-      document.body.style.overflow = "auto"; // Limpia el estilo al desmontar
-    };
-  }, [show]);
-
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger className="w-full">
         <Button className="w-full">Add</Button>
       </DialogTrigger>

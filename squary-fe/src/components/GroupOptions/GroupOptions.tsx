@@ -19,10 +19,6 @@ interface GroupOptionsProps {
   onBalancesUpdate?: () => void; // Agrega esta propiedad
 }
 
-interface Signature {
-  signer: string;
-  signature: string;
-}
 
 const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalancesUpdate }) => {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
