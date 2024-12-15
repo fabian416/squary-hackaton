@@ -2,9 +2,9 @@ import { firestore } from '../firebaseConfig';
 import { collection, getDocs } from 'firebase/firestore';
 import { ethers } from 'ethers';
 import { APPLICATION_CONFIGURATION } from '../consts/contracts';
+import { getChainId } from '@wagmi/core'
+import { wagmiConfig } from '../wagmi';
 
-const SQUARY_V2_CONTRACT_ADDRESS = APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.address;
-const SQUARY_V2_CONTRACT_ABI = APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.abi;
 
 // Función para obtener las deudas simplificadas de Firestore
 export const fetchSimplifiedDebts = async (groupId: string) => {
@@ -24,6 +24,9 @@ export const settleDebts = async (
   groupId: string,
   signatures: string[]
 ) => {
+  const chainId = getChainId(wagmiConfig);
+  const SQUARY_V2_CONTRACT_ADDRESS = APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address;
+  const SQUARY_V2_CONTRACT_ABI = APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi;
   try {
     // Obtener el signer
     const signer = await walletProvider.getSigner();

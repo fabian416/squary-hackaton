@@ -11,6 +11,8 @@ import { APPLICATION_CONFIGURATION } from '../../../consts/contracts';
 import { useEnsName } from 'wagmi';
 import { useUser } from '../../../utils/UserContext';
 import { sepolia } from 'viem/chains';
+import { getChainId } from '@wagmi/core'
+import { wagmiConfig } from '../../../wagmi';
 
 interface Debt {
   debtor: string;
@@ -112,6 +114,7 @@ const SettleModal: React.FC<SettleModalProps> = ({
   const [simplifiedDebts, setSimplifiedDebts] = useState<Debt[]>([]);
   const [hasActiveProposalState, setHasActiveProposalState] = useState(hasActiveProposal);
   const signer = useEthersSigner(); 
+  const chainId = getChainId(wagmiConfig);
   
   console.log('Has Active Proposal State:', hasActiveProposalState);
 
@@ -145,8 +148,8 @@ const SettleModal: React.FC<SettleModalProps> = ({
     
     try {
     const contract = new ethers.Contract(
-      APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.address,
-      APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.abi,
+      APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
+      APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi,
       signer
     );
   

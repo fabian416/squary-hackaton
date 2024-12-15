@@ -26,15 +26,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const loadAliases = async () => {
         try {
           const aliasData = await fetchAliases(address);
-          console.log('Fetched aliases (raw):', aliasData);
 
           // Normalizar las direcciones a minúsculas
           const normalizedAliases = Object.keys(aliasData).reduce((acc, key) => {
             acc[key.toLowerCase().trim()] = aliasData[key];
             return acc;
           }, {} as Record<string, string>);
-
-          console.log('Normalized aliases:', normalizedAliases);
           setAliases(normalizedAliases);
         } catch (error) {
           console.error('Error fetching aliases:', error);

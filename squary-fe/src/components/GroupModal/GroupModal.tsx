@@ -13,16 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { useForm } from "react-hook-form"
+import { APPLICATION_CONFIGURATION } from '../../consts/contracts';
 import {
   Select,
   SelectContent,
@@ -31,6 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card } from "@/components/ui/card";
+import { getChainId } from '@wagmi/core'
+import { wagmiConfig } from '../../wagmi';
 
 interface GroupModalProps {
   show: boolean;
@@ -45,6 +38,9 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
   const [members, setMembers] = useState<string[]>([]);
   const [tokenAddress, setTokenAddress] = useState('');
   const { address } = useAccount();
+  const chainId = getChainId(wagmiConfig);
+  const SQUARY_USDT_CONTRACT = APPLICATION_CONFIGURATION.contracts[chainId].USDT_CONTRACT.address;
+  const SQUARY_USDC_CONTRACT = APPLICATION_CONFIGURATION.contracts[chainId].USDC_CONTRACT.address;
 
   const isValidAddress = (address: string) => {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -141,9 +137,8 @@ const GroupModal: React.FC<GroupModalProps> = ({ show, handleClose, createGroup,
                   <SelectValue placeholder="Currency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0x7Bf4dC86937EB387807d09f935D3a5c3A2888119">USDC</SelectItem>
-                  <SelectItem value="0x04F2993B25AFDee6d9020d42cBAaD667FD35f458">USDT</SelectItem>
-                  <SelectItem value="0x6B175474E89094C44Da98b954EedeAC495271d0F">DAI</SelectItem>
+                  <SelectItem value={SQUARY_USDC_CONTRACT}>USDC</SelectItem>
+                  <SelectItem value={SQUARY_USDT_CONTRACT}>USDT</SelectItem>
                 </SelectContent>
               </Select>
 

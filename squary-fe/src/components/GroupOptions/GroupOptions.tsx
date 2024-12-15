@@ -4,10 +4,7 @@ import SettleModal from './SettleModal/SettleModal';
 import { firestore } from '../../firebaseConfig';
 import { doc, getDoc, collection, addDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { useEthersSigner } from '../../hooks/ethersHooks'; 
-import { APPLICATION_CONFIGURATION } from '../../consts/contracts';
-import { ethers } from 'ethers';
 import { useUser } from '../../utils/UserContext';
-import { success, error, loading, remove } from '../../utils/notificationUtils.tsx';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,18 +27,12 @@ interface Signature {
 const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalancesUpdate }) => {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showSettleModal, setShowSettleModal] = useState(false);
-  const [showWithdrawDepositModal, setShowWithdrawDepositModal] = useState(false); // Added state
   const [groupMembers, setGroupMembers] = useState<string[]>([]);
   const { currentUser } = useUser(); // Usa el contexto
   const [hasActiveProposal, setHasActiveProposal] = useState<boolean>(false);
   const [userHasSigned, setUserHasSigned] = useState<boolean>(false);
   const [settleProposalId, setSettleProposalId] = useState<string>('');
   const signer = useEthersSigner(); // Signer desde Viem
-  const [modalActionType, setModalActionType] = useState<
-  "Deposit" | "Withdraw"
->("Deposit");
-
-
 
    // Obtener miembros del grupo desde Firestore
    useEffect(() => {
@@ -84,102 +75,6 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
     return () => unsubscribe();
   }, [groupId, signer]);
 
-  const handleWithdrawFunds = async (amount: number) => {
-    if (!signer) {
-      console.error('No signer found. Please connect a wallet.');
-      return;
-    }
-    try {
-      const contract = new ethers.Contract(
-        APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.address,
-        APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.abi,
-        signer
-      );
-      const parsedAmount = ethers.parseUnits(amount.toString(), 6);
-      const tx = await contract.withdrawFunds(groupId, parsedAmount);
-      console.log('Withdraw transaction sent:', tx.hash);
-      await tx.wait();
-      console.log('Withdrawal confirmed.');
-      onBalancesUpdate?.();
-    } catch (error) {
-     
-      console.error('Error during withdrawal:', error);
-    }
-  };const handleDepositFunds = async (amount: number) => {
-    if (!signer) {
-      console.error('No signer found. Please connect a wallet.');
-      return;
-    }
-  
-    try {
-      const erc20Contract = new ethers.Contract(
-        APPLICATION_CONFIGURATION.contracts.USDT_CONTRACT.address,
-        APPLICATION_CONFIGURATION.contracts.USDT_CONTRACT.abi,
-        signer
-      );
-      const squaryContract = new ethers.Contract(
-        APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.address,
-        APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.abi,
-        signer
-      );
-      const parsedAmount = ethers.parseUnits(amount.toString(), 6);
-  
-      // Notificación para el proceso de aprobación
-      let loadApprv: string | undefined; // Declarar la variable fuera del try-catch interno
-      try {
-        loadApprv = loading('Awaiting user confirmation for approval...');
-        const approveTx = await erc20Contract.approve(
-          APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.address,
-          parsedAmount
-        );
-        remove(loadApprv);
-  
-        const loadComplete = loading('Awaiting for transaction to be completed...');
-        console.log('Approve transaction sent:', approveTx.hash);
-  
-        await approveTx.wait();
-        remove(loadComplete);
-        success('Approval completed successfully.');
-      } catch (approveError) {
-        if (loadApprv) remove(loadApprv); // Eliminar el spinner de aprobación si ocurre un error
-        error('Error during approval. Please try again.');
-        console.error('Approval failed:', approveError);
-        return; // Detener ejecución si falla la aprobación
-      }
-  
-      // Notificación para el proceso de depósito
-      let depositNotification: string | undefined; // Declarar la variable fuera del try-catch interno
-      try {
-        depositNotification = loading('Awaiting user confirmation for deposit...');
-        const depositTx = await squaryContract.depositFunds(groupId, parsedAmount);
-        remove(depositNotification);
-  
-        const txNotification = loading('Awaiting for transaction to be completed...');
-        console.log('Deposit transaction sent:', depositTx.hash);
-  
-        await depositTx.wait();
-        remove(txNotification);
-        success('Deposit completed successfully.');
-        console.log('Deposit confirmed.');
-        onBalancesUpdate?.();
-      } catch (depositError) {
-        if (depositNotification) remove(depositNotification); // Eliminar el spinner de depósito si ocurre un error
-        error('Error during deposit. Please try again.');
-        console.error('Deposit failed:', depositError);
-      }
-    } catch (generalError) {
-      console.error('Unexpected error during deposit:', generalError);
-      error('An unexpected error occurred. Please try again.');
-    }
-  };
-
-  const handleAction = async (amount: number) => {
-    if (modalActionType === 'Withdraw') {
-      await handleWithdrawFunds(amount);
-    } else if (modalActionType === 'Deposit') {
-      await handleDepositFunds(amount);
-    }
-  };
   const handleAddExpense = async (amount: number, description: string, sharedWith: string[], paidBy: string) => {
     const newExpense = {
       amount,

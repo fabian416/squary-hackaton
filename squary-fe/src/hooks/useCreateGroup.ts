@@ -3,11 +3,15 @@ import { setDoc, doc } from 'firebase/firestore';
 import { APPLICATION_CONFIGURATION } from '../consts/contracts';
 import { firestore } from '../firebaseConfig';
 import { useEthersSigner } from './ethersHooks'; // Importa tu hook
+import { getChainId } from '@wagmi/core'
+import { wagmiConfig } from '../wagmi';
+
 
 export const useCreateGroup = () => {
   const signer = useEthersSigner(); // Obtén el signer del hook
-  const SQUARY_V2_CONTRACT_ADDRESS = APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.address;
-  const SQUARY_V2_CONTRACT_ABI = APPLICATION_CONFIGURATION.contracts.SQUARY_CONTRACT.abi;
+  const chainId = getChainId(wagmiConfig);
+  const SQUARY_V2_CONTRACT_ADDRESS = APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address;
+  const SQUARY_V2_CONTRACT_ABI = APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi;
 
   const createGroup = async (groupName: string, members: string[], tokenAddress: string) => {
     if (!signer) {
