@@ -56,7 +56,7 @@ const GroupDetails = () => {
         {/* Balances */}
         <Card className="flex flex-col h-full">
           <div className="bg-white p-4 rounded-lg shadow-sm flex-grow">
-            <GroupBalances balances={balances} />
+            <GroupBalances balances={balances} groupId={groupId} />
           </div>
         </Card>
       </div>

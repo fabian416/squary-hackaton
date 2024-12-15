@@ -23,13 +23,9 @@ export const useUserGroups = () => {
         provider
       );
       
-      console.log("paso");
-      console.log({address});
       const groupIds = await contract.getUserGroups(address);
-      console.log({groupIds});
       const groupDetails = await Promise.all(
         groupIds.map(async (groupId: string) => {
-          
           const [name] = await contract.getGroupDetails(groupId);
           return { id: groupId, name };
         })

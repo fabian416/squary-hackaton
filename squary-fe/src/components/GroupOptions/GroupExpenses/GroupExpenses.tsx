@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { firestore } from '../../../firebaseConfig';
 import { collection, onSnapshot, DocumentData, QuerySnapshot, Timestamp } from 'firebase/firestore';
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
-import { useEnsName } from 'wagmi';
-import { useUser } from '../../../utils/UserContext';
-import { sepolia } from 'viem/chains';
+import { ENSName } from '../ExpenseModal/ExpenseModal';
 
 interface GroupExpensesProps {
   groupId: string;
@@ -18,23 +16,6 @@ interface Expense {
   settled: boolean;
   timestamp: Timestamp; // Puedes usar Date si conviertes los timestamps a Date
 }
-
-const ENSName: React.FC<{ address: string }> = ({ address }) => {
-  const { data: ensName } = useEnsName({
-    address: address as `0x${string}`,
-    chainId: sepolia.id, // Sepolia
-  });
-  const { aliases } = useUser();
-  
-  const resolveName = (): string => {
-    const normalizedAddress = address.toLowerCase().trim();
-    if (ensName) return ensName;
-    if (aliases[normalizedAddress]) return aliases[normalizedAddress];
-    return `${normalizedAddress.substring(0, 6)}...${normalizedAddress.slice(-4)}`;
-  };
-
-  return <>{resolveName()}</>;
-};
 
 const GroupExpenses: React.FC<GroupExpensesProps> = ({ groupId }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -83,12 +64,12 @@ const GroupExpenses: React.FC<GroupExpensesProps> = ({ groupId }) => {
               <TableCell>{expense.description}</TableCell>
               <TableCell>${expense.amount}</TableCell>
               <TableCell>
-                <ENSName address={expense.paidBy} />
+                <ENSName address={expense.paidBy} shrink={true} />
               </TableCell>
               <TableCell>
                 {expense.sharedWith.map((member, idx) => (
                   <span key={idx} className="block">
-                    <ENSName address={member} />
+                    <ENSName address={member} shrink={true} />
                   </span>
                 ))}
               </TableCell>

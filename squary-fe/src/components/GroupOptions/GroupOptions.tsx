@@ -29,10 +29,6 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
   const [showSettleModal, setShowSettleModal] = useState(false);
   const [groupMembers, setGroupMembers] = useState<string[]>([]);
   const { currentUser } = useUser(); // Usa el contexto
-  const [hasActiveProposal, setHasActiveProposal] = useState<boolean>(false);
-  const [userHasSigned, setUserHasSigned] = useState<boolean>(false);
-  const [settleProposalId, setSettleProposalId] = useState<string>('');
-  const signer = useEthersSigner(); // Signer desde Viem
 
    // Obtener miembros del grupo desde Firestore
    useEffect(() => {
@@ -50,31 +46,6 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
     fetchGroupMembers();
   }, [groupId]);
 
-  // Escuchar cambios en las propuestas de liquidación
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(firestore, 'groups', groupId, 'settleProposals'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const proposalDoc = snapshot.docs[0];
-          const proposalData = proposalDoc.data();
-          setHasActiveProposal(true);
-          setSettleProposalId(proposalDoc.id);
-
-          if (proposalData.signatures.some((sig: Signature) => sig.signer === signer?.address)) {
-            setUserHasSigned(true);
-          } else {
-            setUserHasSigned(false);
-          }
-        } else {
-          setHasActiveProposal(false);
-          setUserHasSigned(false);
-        }
-      }
-    );
-    return () => unsubscribe();
-  }, [groupId, signer]);
-
   const handleAddExpense = async (amount: number, description: string, sharedWith: string[], paidBy: string) => {
     const newExpense = {
       amount,
@@ -91,11 +62,7 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
   const handleOpenExpenseModal = () => setShowExpenseModal(true);
   const handleCloseExpenseModal = () => setShowExpenseModal(false);
 
-  const handleOpenSettleModal = () => {
-    if (!hasActiveProposal || !userHasSigned) {
-      setShowSettleModal(true);
-    }
-  };
+  const handleOpenSettleModal = () => setShowSettleModal(true);
   const handleCloseSettleModal = () => setShowSettleModal(false);
 
   return (
@@ -116,9 +83,8 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
           <Button
             className="w-full"
             onClick={handleOpenSettleModal}
-            disabled={hasActiveProposal && userHasSigned}
           >
-          {hasActiveProposal ? (userHasSigned ? "Signed" : "Sign") : "Pay Debts"}
+            Pay Debts
           </Button>
 
       </CardContent>
@@ -141,9 +107,6 @@ const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalan
           handleClose={handleCloseSettleModal}
           groupId={groupId}
           currentUser={currentUser}
-          hasActiveProposal={hasActiveProposal}
-          userHasSigned={userHasSigned}
-          settleProposalId={settleProposalId}
         />
       )}
   

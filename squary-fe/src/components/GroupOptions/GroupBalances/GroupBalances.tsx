@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import { useEnsName } from 'wagmi';
 import { useUser } from '../../../utils/UserContext';
 import { sepolia } from 'viem/chains';
+import { collection, getDocs, writeBatch } from 'firebase/firestore';
 import {
   Tabs,
   TabsContent,
@@ -16,6 +17,9 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { calculateSimplifiedDebts } from '../SettleModal/SettleModal';
+import { firestore } from '../../../firebaseConfig';
+import { ENSName } from '../ExpenseModal/ExpenseModal';
 
 // Apollo Client setup
 const client = new ApolloClient({
@@ -35,6 +39,7 @@ const GET_BALANCES = gql`
 
 interface GroupBalancesProps {
   balances: Balance[]; // La lista de balances será pasada como prop
+  groupId: string;
 }
 
 interface Balance {
@@ -46,7 +51,22 @@ interface Balance {
 // Nuevo tipo extendido para incluir las propiedades calculadas
 interface ProcessedBalance extends Balance {
   rawBalance: number;
-  available: number;
+}
+
+
+interface Expense {
+  amount: number;
+  description: string;
+  paidBy: string;
+  sharedWith: string[];
+  settled: boolean;
+  timestamp: any;
+}
+
+interface Debt {
+  debtor: string;
+  creditor: string;
+  amount: number;
 }
 
 export const fetchBalances = async (groupId: string): Promise<Balance[]> => {
@@ -67,88 +87,54 @@ export const fetchBalances = async (groupId: string): Promise<Balance[]> => {
   }
 };
 
-const calculateNetAvailable = (balances: Balance[], memberAddress: string): number => {
-  console.log(`Calculating net available for member: ${memberAddress}`);
-
-  const userBalance = balances.find((b) => b.member === memberAddress)?.balance || '0';
-  const userDeposits = parseFloat(ethers.formatUnits(userBalance, 6));
-
-  const debtsOwedByUser = balances
-    .filter((b) => parseFloat(ethers.formatUnits(b.balance, 6)) < 0)
-    .reduce((sum, debt) => {
-      const debtAmount = Math.abs(parseFloat(ethers.formatUnits(debt.balance, 6)));
-      return sum + debtAmount;
-    }, 0);
-
-  const netAvailable = Math.max(userDeposits - debtsOwedByUser, 0);
-  return netAvailable;
-};
-
-// Componente auxiliar para resolver nombres con prioridad ENS > Alias > Dirección abreviada
-const ENSName: React.FC<{ address: string }> = ({ address }) => {
-  const { data: ensName } = useEnsName({
-    address: address as `0x${string}`,
-    chainId: sepolia.id, // Sepolia o Mainnet
-  });
-  const { aliases } = useUser();
-
-  const resolveName = (): string => {
-    if (ensName) return ensName; // Si hay ENS
-    if (aliases[address.toLowerCase()]) return aliases[address.toLowerCase()]; // Si hay alias
-    return `${address.substring(0, 6)}...${address.slice(-4)}`; // Dirección abreviada
-  };
-
-  return <>{resolveName()}</>;
-};
-
-const GroupBalances: React.FC<GroupBalancesProps> = ({ balances }) => {
+const GroupBalances: React.FC<GroupBalancesProps> = ({ balances, groupId }) => {
   const [processedBalances, setProcessedBalances] = useState<ProcessedBalance[]>([]);
+  const [simplifiedDebts, setSimplifiedDebts] = useState<Debt[]>([]);
 
   useEffect(() => {
     console.log("Balances received in GroupBalances:", balances);
     const formattedBalances = balances.map((balance) => {
       const rawBalance = parseFloat(ethers.formatUnits(balance.balance, 6));
-      const available = calculateNetAvailable(balances, balance.member);
       return {
         ...balance,
         rawBalance,
-        available,
       };
     });
     setProcessedBalances(formattedBalances);
     console.log("Processed balances updated:", formattedBalances);
   }, [balances]);
 
-  const owingBalances = processedBalances.filter((b) => b.rawBalance < 0).map((debtor) => {
-    const creditor = processedBalances.find(
-      (b) => b.rawBalance > 0 && b.member !== debtor.member
-    );
-    return {
-      ...debtor,
-      creditor: creditor?.member || 'Unknown',
-    };
-  });
+  useEffect(() => {
+    const fetchExpensesAndCalculateDebts = async () => {
+      const expensesSnapshot = await getDocs(collection(firestore, 'groups', groupId, 'expenses'));
+      const expenses: Expense[] = expensesSnapshot.docs.map(doc => doc.data() as Expense);
 
+      const debts = calculateSimplifiedDebts(expenses);
+      setSimplifiedDebts(debts);
+    };
+
+    fetchExpensesAndCalculateDebts();
+  }, [groupId]);
   
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-xl font-bold">Balances</h2>
-      <Tabs defaultValue="debts" className="w-full max-w-[600px] mx-auto">
+      <Tabs defaultValue="debts" className="w-full mx-auto">
         <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="debts">Debts</TabsTrigger>
         </TabsList>
 
         {/* Debts Section */}
         <TabsContent value="debts">
-          {owingBalances.length > 0 ? (
-            owingBalances.map((balance) => (
-              <Card key={balance.id} className="border-red-500 mb-4">
+          {simplifiedDebts.length > 0 ? (
+            simplifiedDebts.map((balance) => (
+              <Card key={`${balance.debtor}-${balance.amount}`} className="border-red-500 mb-4">
                 <CardHeader>
                   <CardTitle className="text-red-700">
-                    <ENSName address={balance.member} /> owes:
+                    <ENSName address={balance.debtor} /> owes <ENSName address={balance.creditor} />:
                   </CardTitle>
                   <CardDescription>
-                    ${Math.abs(balance.rawBalance).toFixed(2)}
+                    ${Math.abs(balance.amount).toFixed(2)}
                   </CardDescription>
                 </CardHeader>
               </Card>

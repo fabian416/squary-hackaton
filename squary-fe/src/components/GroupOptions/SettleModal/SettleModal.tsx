@@ -3,14 +3,12 @@ import Modal from 'react-modal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "../../../lib/utils";
-import { addDoc, updateDoc, doc, arrayUnion, getDoc, collection, getDocs, writeBatch, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, writeBatch } from 'firebase/firestore';
 import { firestore } from '../../../firebaseConfig';
 import { ethers } from 'ethers';
 import { useEthersSigner } from '../../../hooks/ethersHooks'; 
 import { APPLICATION_CONFIGURATION } from '../../../consts/contracts';
-import { useEnsName } from 'wagmi';
-import { useUser } from '../../../utils/UserContext';
-import { sepolia } from 'viem/chains';
+import { ENSName } from '../ExpenseModal/ExpenseModal';
 import { getChainId } from '@wagmi/core'
 import { wagmiConfig } from '../../../wagmi';
 
@@ -29,19 +27,11 @@ interface Expense {
   timestamp: any;
 }
 
-interface Signature {
-  signer: string;
-  signature: string;
-}
-
 interface SettleModalProps {
   show: boolean;
   handleClose: () => void;
   groupId: string;
   currentUser: string;
-  hasActiveProposal: boolean;
-  userHasSigned: boolean;
-  settleProposalId: string;
 }
 
 Modal.setAppElement('#root');
@@ -85,42 +75,15 @@ const calculateSimplifiedDebts = (expenses: Expense[]): Debt[] => {
   return simplifiedDebts;
 };
 
-// Componente auxiliar para resolver nombres con prioridad ENS > Alias > Dirección abreviada
-const ENSName: React.FC<{ address: string }> = ({ address }) => {
-  const { data: ensName } = useEnsName({
-    address: address as `0x${string}`,
-    chainId: sepolia.id, // Sepolia o Mainnet
-  });
-  const { aliases } = useUser();
-
-  const resolveName = (): string => {
-    if (ensName) return ensName; // Si hay ENS
-    if (aliases[address.toLowerCase()]) return aliases[address.toLowerCase()]; // Si hay alias
-    return `${address.substring(0, 6)}...${address.slice(-4)}`; // Dirección abreviada
-  };
-
-  return <>{resolveName()}</>;
-};
-
 const SettleModal: React.FC<SettleModalProps> = ({
   show,
   handleClose,
   groupId,
   currentUser,
-  hasActiveProposal,
-  userHasSigned,
-  settleProposalId
 }) => {
   const [simplifiedDebts, setSimplifiedDebts] = useState<Debt[]>([]);
-  const [hasActiveProposalState, setHasActiveProposalState] = useState(hasActiveProposal);
   const signer = useEthersSigner(); 
   const chainId = getChainId(wagmiConfig);
-  
-  console.log('Has Active Proposal State:', hasActiveProposalState);
-
-  useEffect(() => {
-    setHasActiveProposalState(hasActiveProposal);
-  }, [hasActiveProposal]);
 
   // Obtener y calcular las deudas simplificadas al abrir el modal
   useEffect(() => {
@@ -147,128 +110,48 @@ const SettleModal: React.FC<SettleModalProps> = ({
     }
     
     try {
-    const contract = new ethers.Contract(
-      APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
-      APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi,
-      signer
-    );
-  
-    const isMember = await contract.isMember(groupId, currentUser);
-    if (!isMember) {
-      console.error('Current user is not a member of the group');
-      return;
-    }
-  
-    const group = await contract.groups(groupId);
-    const groupNonce = group.nonce;
-  
-    // Convertir las deudas simplificadas a BigNumber
-    const formattedDebts = simplifiedDebts.map(debt => ({
-      debtor: ethers.getAddress(debt.debtor),
-      creditor: ethers.getAddress(debt.creditor),
-      amount: ethers.parseUnits(Number(debt.amount).toFixed(6), 6).toString(),
-    }));
-  
-    console.log("Simplified Debts:", simplifiedDebts); // Imprimir las deudas simplificadas en consola
-  
-    const calculateActionHash = (groupId: string, debts: typeof formattedDebts, nonce: bigint) => {
-      let hash = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(['bytes32'], [groupId]));
-      for (const debt of debts) {
-        hash = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
-          ['bytes32', 'address', 'address', 'uint256'],
-          [hash, debt.debtor, debt.creditor, BigInt(debt.amount)]
-        ));
+      const contract = new ethers.Contract(
+        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
+        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi,
+        signer
+      );
+    
+      const isMember = await contract.isMember(groupId, currentUser);
+      if (!isMember) {
+        console.error('Current user is not a member of the group');
+        return;
       }
-      return ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
-        ['bytes32', 'string', 'uint256'],
-        [hash, 'settleDebts', nonce]
-      ));
-    };
-  
-    const actionHashScript = calculateActionHash(groupId, formattedDebts, groupNonce);
-    const signature = await signer.signMessage(ethers.getBytes(actionHashScript));
-  
-    if (!hasActiveProposal) {
-      // Crear una nueva propuesta de settle
-      const settleProposal = {
-        groupId,
-        debts: formattedDebts,
-        proposer: currentUser,
-        signatures: [{ signer: currentUser, signature }]
-      };
-  
-      await addDoc(collection(firestore, 'groups', groupId, 'settleProposals'), settleProposal);
-      console.log('Settle proposal created and signed successfully');
-      handleClose();
-    } else if (!userHasSigned) {
-      // Agregar la firma del usuario a una propuesta activa
-      const proposalRef = doc(firestore, 'groups', groupId, 'settleProposals', settleProposalId);
-      await updateDoc(proposalRef, {
-        signatures: arrayUnion({ signer: currentUser, signature })
-      });
-  
-      // Verificar si se alcanzó el umbral de firmas
-      const groupDoc = await getDoc(doc(firestore, 'groups', groupId));
-      const groupData = groupDoc.data();
-      const signatureThreshold = groupData?.signatureThreshold;
-  
-      const updatedProposalSnap = await getDoc(proposalRef);
-      const updatedProposalData = updatedProposalSnap.data();
-      if (updatedProposalData && updatedProposalData.signatures.length >= signatureThreshold) {
-        console.log('Signatures:', updatedProposalData.signatures);
-      
-        // Llamar al contrato para realizar el settle
-        try {
-          const tx = await contract.settleDebtsWithSignatures(
-            groupId,
-            formattedDebts,
-            updatedProposalData.signatures.map((sig: Signature) => sig.signature)
-          );
-          console.log('Transaction sent:', tx.hash);
-      
-          // Esperar confirmación
-          await tx.wait();
-          console.log('Transaction confirmed successfully.');
-      
-          // Marcar las expenses como settled en Firestore
-          const expensesRef = collection(firestore, 'groups', groupId, 'expenses');
-          const snapshot = await getDocs(expensesRef);
-      
-          const batch = writeBatch(firestore);
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            if (!data.settled) {
-              const expenseRef = doc.ref;
-              batch.update(expenseRef, { settled: true });
-            }
-          });
-      
-          await batch.commit();
-          console.log('Expenses marked as settled successfully.');
-              
-          // Eliminar la propuesta de Firestore
-        const proposalRef = doc(firestore, 'groups', groupId, 'settleProposals', settleProposalId);
-        await deleteDoc(proposalRef);
-        console.log('Proposal deleted successfully.');
+    
+      // Convertir las deudas simplificadas a BigNumber
+      const formattedDebts = simplifiedDebts.map(debt => ({
+        debtor: ethers.getAddress(debt.debtor),
+        creditor: ethers.getAddress(debt.creditor),
+        amount: ethers.parseUnits(Number(debt.amount).toFixed(6), 6).toString(),
+      }));
+    
+      console.log("Formated Debts:", formattedDebts); // Imprimir las deudas simplificadas en consola
+      // Llamar al contrato para realizar el settle
+      try {
+        const tx = await contract.settleDebts(
+          groupId,
+          formattedDebts,
+        );
+        console.log('Transaction sent:', tx.hash);
+    
+        // Esperar confirmación
+        await tx.wait();
+        console.log('Transaction confirmed successfully.');
 
         // Reiniciar estado del botón a "Start Settle"
         setSimplifiedDebts([]);
-        setHasActiveProposalState(false); // Actualizar el estado después de eliminar la propuesta
-        } catch (error) {
-          console.error('Error during settle transaction:', error);
-        }
+      } catch (error) {
+        console.error('Error during settle transaction:', error);
       }
-      else {
-        console.log('Signed settle proposal successfully.');
-      }
-    
-      // Cierra el modal automáticamente
-      handleClose();
+    } catch (error) {
+      console.log('Signed settle proposal successfully.');
     }
-    handleClose()
-  } catch (error) {
-    console.error('Error during the operation:', error);
-  }
+    // Cierra el modal automáticamente
+    handleClose();
   }
 
   return (
@@ -301,19 +184,11 @@ const SettleModal: React.FC<SettleModalProps> = ({
           {/* Action Button */}
           <Button
           onClick={handleProposeSettle}
-          disabled={hasActiveProposalState && userHasSigned} // Use state to manage button interactivity
           className={cn(
             "w-full py-4 text-lg h-14 font-medium transition-all duration-200", // Base styles
-            hasActiveProposalState && userHasSigned
-              ? "bg-gray-400 cursor-not-allowed" // Disabled state
-              : "bg-yellow-500 hover:bg-yellow-600 text-white" // Active state
           )}
         >
-          {hasActiveProposalState
-            ? userHasSigned
-              ? "Signed" // Button text when signed
-              : "Sign" // Button text when signature is needed
-            : "Propose Settle"}
+          Pay
         </Button>
         </div>
       </DialogContent>
@@ -322,3 +197,4 @@ const SettleModal: React.FC<SettleModalProps> = ({
 };
 
 export default SettleModal;
+export {calculateSimplifiedDebts}

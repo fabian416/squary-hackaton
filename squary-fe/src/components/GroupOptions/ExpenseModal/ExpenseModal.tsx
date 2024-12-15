@@ -15,7 +15,7 @@ interface ExpenseModalProps {
 }
 
 // Componente auxiliar para resolver nombres con prioridad ENS > Alias > Dirección abreviada
-const ENSName: React.FC<{ address: string }> = ({ address }) => {
+const ENSName: React.FC<{ address: string, shrink?: boolean }> = ({ address, shrink }) => {
   const { data: ensName } = useEnsName({
     address: address as `0x${string}`,
     chainId: sepolia.id,
@@ -25,6 +25,7 @@ const ENSName: React.FC<{ address: string }> = ({ address }) => {
   const resolveName = (): string => {
     if (ensName) return ensName; // If ENS name exists
     if (aliases[address.toLowerCase()]) return aliases[address.toLowerCase()]; // If alias exists
+    if (!shrink) return address;
     return `${address.substring(0, 6)}...${address.slice(-4)}`; // Shortened address
   };
 
@@ -195,3 +196,4 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ show, handleClose, addExpen
 };
 
 export default ExpenseModal;
+export { ENSName }
