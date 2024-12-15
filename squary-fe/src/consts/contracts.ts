@@ -21,15 +21,8 @@ const DEVELOPMENT_CONFIGURATION = {
       name: "zksyncSepoliaTestnet",
       currency: "ETH",
       explorerUrl: "",
-      rpcUrl: "https://sepolia.era.zksync.dev",
-    },
-    chainMain: {
-      chainId: 324,
-      name: "zksyncSepoliaTestnet",
-      currency: "ETH",
-      explorerUrl: "https://mainnet.era.zksync.io",
-      rpcUrl: "",
-    },
+      rpcUrl: "https://zksync-sepolia.drpc.org",
+    }
   };
 
   export const APPLICATION_CONFIGURATION = DEVELOPMENT_CONFIGURATION;
