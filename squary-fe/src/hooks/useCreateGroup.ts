@@ -37,7 +37,7 @@ export const useCreateGroup = () => {
         throw new Error('Event GroupCreated not found');
       }
 
-      const groupId = event.args.id;
+      const groupId = event.args[0];
 
       // Crear el grupo en Firestore
       const groupData = {
