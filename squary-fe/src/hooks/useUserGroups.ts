@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useEthersProvider } from "./ethersHooks";
 import { APPLICATION_CONFIGURATION } from "../consts/contracts";
 import { ethers } from "ethers";
-import { useUser } from '../utils/UserContext';
 import { getChainId } from '@wagmi/core'
 import { wagmiConfig } from '../wagmi';
 import { useAccount } from 'wagmi';
@@ -17,20 +16,20 @@ export const useUserGroups = () => {
       return console.error("Provider no encontrado");
     }
     
-      const contract = new ethers.Contract(
-        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
-        APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi,
-        provider
-      );
-      
-      const groupIds = await contract.getUserGroups(address);
-      const groupDetails = await Promise.all(
-        groupIds.map(async (groupId: string) => {
-          const [name] = await contract.getGroupDetails(groupId);
-          return { id: groupId, name };
-        })
-      );
-      setGroups(groupDetails);
+    const contract = new ethers.Contract(
+      APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address,
+      APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.abi,
+      provider
+    );
+    
+    const groupIds = await contract.getUserGroups(address);
+    const groupDetails = await Promise.all(
+      groupIds.map(async (groupId: string) => {
+        const [name] = await contract.getGroupDetails(groupId);
+        return { id: groupId, name };
+      })
+    );
+    setGroups(groupDetails);
 
   }, [provider]);
 

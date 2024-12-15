@@ -12,8 +12,8 @@ contract Squary {
         bytes32 id;
         string name;
         address[] members;
-        mapping(address => int256) balances; // Balances de cada miembro
         address tokenAddress; // Token para las deudas (USDT, USDC)
+        mapping(address => mapping(address => bool)) paid;
     }
 
     struct Debt {
@@ -60,74 +60,44 @@ contract Squary {
         emit GroupCreated(groupId, name, members);
     }
 
-    // Pagar todas las deudas directamente
     function settleDebts(
         bytes32 groupId,
-        Debt[] calldata debts // Lista de deudas a pagar
+        Debt[] calldata debts
     ) external onlyMember(groupId) {
         Group storage group = groups[groupId];
         IERC20 token = IERC20(group.tokenAddress);
 
-        // Validar que las deudas corresponden a los balances actuales
-        int256[] memory balancesCopy = new int256[](group.members.length);
-        address[] memory members = group.members;
-
-        // Crear una copia de los balances iniciales
-        for (uint256 i = 0; i < members.length; i++) {
-            balancesCopy[i] = group.balances[members[i]];
-        }
-
+        // Procesar deudas
         for (uint256 i = 0; i < debts.length; i++) {
             Debt memory debt = debts[i];
 
-            // Validar que el deudor tiene suficiente saldo negativo para pagar
-            require(
-                group.balances[debt.debtor] <= 0 &&
-                    group.balances[debt.debtor] + int256(debt.amount) >= 0,
-                "Insufficient debt balance"
-            );
-
-            // Validar que el acreedor tiene saldo positivo para recibir
-            require(
-                group.balances[debt.creditor] >= 0,
-                "Invalid creditor balance"
-            );
-
-            // Validar que las direcciones involucradas sean miembros del grupo
+            // Validar que las direcciones sean miembros del grupo
             require(
                 isMember(groupId, debt.debtor) &&
                     isMember(groupId, debt.creditor),
                 "Addresses must be group members"
             );
 
-            // Transferir tokens del deudor al acreedor
+            // Realizar la transferencia de tokens
             require(
                 token.transferFrom(debt.debtor, debt.creditor, debt.amount),
                 "Token transfer failed"
             );
 
-            // Actualizar balances
-            group.balances[debt.debtor] += int256(debt.amount);
-            group.balances[debt.creditor] -= int256(debt.amount);
+            group.paid[debt.debtor][debt.creditor] = true;
 
             emit DebtPaid(groupId, debt.debtor, debt.creditor, debt.amount);
         }
-
-        // Validar que los balances estén alineados con el estado inicial
-        for (uint256 i = 0; i < members.length; i++) {
-            require(
-                group.balances[members[i]] == balancesCopy[i],
-                "Balances do not match the expected state"
-            );
-        }
     }
 
-    // Obtener el balance de un miembro en un grupo
-    function getBalance(
+    // Verificar si una dirección es miembro de un grupo
+    function paid(
         bytes32 groupId,
-        address member
-    ) external view returns (int256) {
-        return groups[groupId].balances[member];
+        address debtor,
+        address creditor
+    ) public view returns (bool) {
+        Group storage group = groups[groupId];
+        return group.paid[debtor][creditor];
     }
 
     // Verificar si una dirección es miembro de un grupo
