@@ -1,5 +1,5 @@
-import { Calendar, ChevronDown, Home, Inbox, MoreHorizontal, Search, Settings } from "lucide-react"
-import React, { useState, useEffect } from 'react';
+import { ChevronDown } from "lucide-react"
+import { useEffect } from 'react';
 import {
   Sidebar,
   SidebarContent,

@@ -1,9 +1,6 @@
 import { useEffect } from "react";
-import Sidebar from "../../components/SideBar/SideBar";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "../../utils/UserContext"; 
-import { useCreateGroup } from "../../hooks/useCreateGroup";
-import styles from '../Home/Home.module.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();

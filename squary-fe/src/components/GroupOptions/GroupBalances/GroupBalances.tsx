@@ -22,7 +22,6 @@ import { APPLICATION_CONFIGURATION } from "../../../consts/contracts";
 import { getChainId } from '@wagmi/core'
 import { wagmiConfig } from '../../../wagmi';
 import { useEthersProvider } from '@/hooks/ethersHooks';
-import _ from 'lodash';
 
 // Apollo Client setup
 const client = new ApolloClient({
@@ -49,11 +48,6 @@ interface Balance {
   id: string;
   member: string;
   balance: string; // Manejo como string para BigNumber
-}
-
-// Nuevo tipo extendido para incluir las propiedades calculadas
-interface ProcessedBalance extends Balance {
-  rawBalance: number;
 }
 
 

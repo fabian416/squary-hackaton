@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { createBrowserRouter, RouterProvider, Outlet, useNavigate } from "react-router-dom";
-import { UserProvider, useUser } from "./utils/UserContext";
-import { SidebarTrigger, Sidebar, SidebarProvider } from "@/components/ui/sidebar";
+import { useEffect } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useUser } from "./utils/UserContext";
+import { SidebarTrigger, SidebarProvider } from "@/components/ui/sidebar";
 import { useAccount } from "wagmi";
 import { AppSidebar } from "./views/Sidebar/Sidebar";
 

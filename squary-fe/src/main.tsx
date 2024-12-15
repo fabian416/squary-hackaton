@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import "./tailwind.css";
-
 import { createAppKit } from "@reown/appkit";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { WagmiProvider } from "wagmi";

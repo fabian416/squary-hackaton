@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../utils/UserContext'; // Import your UserContext
 import styles from './Home.module.css';
-import ParticleBackground from '@/components/background';
+import ParticleBackground from '@/components/background.jsx';
 
 const Home = () => {
     const navigate = useNavigate();

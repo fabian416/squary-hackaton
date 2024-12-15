@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ExpenseModal from './ExpenseModal/ExpenseModal';
 import SettleModal from './SettleModal/SettleModal';
 import { firestore } from '../../firebaseConfig';
-import { doc, getDoc, collection, addDoc, onSnapshot, Timestamp } from 'firebase/firestore';
-import { useEthersSigner } from '../../hooks/ethersHooks'; 
+import { doc, getDoc, collection, addDoc, Timestamp } from 'firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +19,7 @@ interface GroupOptionsProps {
 }
 
 
-const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName, onBalancesUpdate }) => {
+const GroupOptions: React.FC<GroupOptionsProps> = ({ groupId, groupName }) => {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showSettleModal, setShowSettleModal] = useState(false);
   const [groupMembers, setGroupMembers] = useState<string[]>([]);
