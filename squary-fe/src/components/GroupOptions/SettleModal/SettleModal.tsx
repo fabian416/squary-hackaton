@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "../../../lib/utils";
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../../../firebaseConfig';
 import { ethers } from 'ethers';
 import { useEthersSigner } from '../../../hooks/ethersHooks'; 
@@ -11,6 +11,7 @@ import { APPLICATION_CONFIGURATION } from '../../../consts/contracts';
 import { ENSName } from '../ExpenseModal/ExpenseModal';
 import { getChainId } from '@wagmi/core'
 import { wagmiConfig } from '../../../wagmi';
+import { hexlify, zeroPadValue } from "ethers";
 
 interface Debt {
   debtor: string;
@@ -82,6 +83,7 @@ const SettleModal: React.FC<SettleModalProps> = ({
   currentUser,
 }) => {
   const [simplifiedDebts, setSimplifiedDebts] = useState<Debt[]>([]);
+  const [groupCurrency, setGroupCurrency] = useState("");
   const signer = useEthersSigner(); 
   const chainId = getChainId(wagmiConfig);
 
@@ -126,20 +128,48 @@ const SettleModal: React.FC<SettleModalProps> = ({
       const formattedDebts = simplifiedDebts.map(debt => ({
         debtor: ethers.getAddress(debt.debtor),
         creditor: ethers.getAddress(debt.creditor),
-        amount: ethers.parseUnits(Number(debt.amount).toFixed(6), 6).toString(),
+        amount: ethers.parseUnits(Number(debt.amount).toFixed(6), 6),
       }));
     
       console.log("Formated Debts:", formattedDebts); // Imprimir las deudas simplificadas en consola
+
+      // Sumar los valores utilizando `bigint`
+      const finalAmount = formattedDebts.reduce(
+        (sum, debt) => sum + debt.amount, // Suma directa con `bigint`
+        0n // Valor inicial como `bigint`
+      );
+
+      const parsedAmount = ethers.parseUnits(Number(finalAmount).toFixed(0), 0);
+      console.log("Total Debt Amount:", parsedAmount);
+
       // Llamar al contrato para realizar el settle
       try {
-        const tx = await contract.settleDebts(
-          groupId,
-          formattedDebts,
+
+        const groupDoc = await getDoc(doc(firestore, 'groups', groupId));
+        const groupData = groupDoc.data();
+        const tokenAddress = groupData?.tokenAddress;
+        console.log({tokenAddress});
+        const erc20Contract = new ethers.Contract(
+          tokenAddress,
+          APPLICATION_CONFIGURATION.contracts[chainId].USDT_CONTRACT.abi,
+          signer
         );
-        console.log('Transaction sent:', tx.hash);
+        
+
+        const tx1 = await erc20Contract.approve(APPLICATION_CONFIGURATION.contracts[chainId].SQUARY_CONTRACT.address, parsedAmount);
+        console.log('Transaction sent:', tx1.hash);
+        // Esperar confirmación
+        await tx1.wait();
+        console.log('Transaction confirmed successfully.');
+
+        console.log({groupId});
+        console.log({formattedDebts});
+        const hexGroupId = ethers.zeroPadValue(ethers.hexlify(groupId), 32);
+        const tx2 = await contract.settleDebts(hexGroupId, formattedDebts);
+        console.log('Transaction sent:', tx2.hash);
     
         // Esperar confirmación
-        await tx.wait();
+        await tx2.wait();
         console.log('Transaction confirmed successfully.');
 
         // Reiniciar estado del botón a "Start Settle"
@@ -148,7 +178,7 @@ const SettleModal: React.FC<SettleModalProps> = ({
         console.error('Error during settle transaction:', error);
       }
     } catch (error) {
-      console.log('Signed settle proposal successfully.');
+      console.error('Error during settle transaction:', error);
     }
     // Cierra el modal automáticamente
     handleClose();
