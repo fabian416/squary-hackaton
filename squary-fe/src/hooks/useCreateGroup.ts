@@ -45,6 +45,7 @@ export const useCreateGroup = () => {
         members,
         tokenAddress,
       };
+
       await setDoc(doc(firestore, 'groups', groupId.toString()), groupData);
       console.log('Grupo creado con éxito en Firestore:', groupData);
 
