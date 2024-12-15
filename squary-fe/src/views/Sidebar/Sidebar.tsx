@@ -35,7 +35,6 @@ export function AppSidebar({ currentUser }: SidebarProps) {
   const createGroup = useCreateGroup();
   const { aliases } = useUser();
 
-  const handleOpenFriendsModal = () => setShowFriendsModal(true);
   const handleCloseFriendsModal = () => setShowFriendsModal(false);
   const handleAddFriend = async (address: string, nickname: string) => {
     if (!currentUser) {
@@ -56,10 +55,6 @@ export function AppSidebar({ currentUser }: SidebarProps) {
   useEffect(() => {
     fetchGroups(); // Carga los grupos cuando el componente se monta
   }, [fetchGroups]);
-
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
 
   const handleCloseModal = () => {
     setShowModal(false);
