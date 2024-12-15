@@ -104,30 +104,6 @@
         "internalType": "bytes32",
         "name": "groupId",
         "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "member",
-        "type": "address"
-      }
-    ],
-    "name": "getBalance",
-    "outputs": [
-      {
-        "internalType": "int256",
-        "name": "",
-        "type": "int256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "groupId",
-        "type": "bytes32"
       }
     ],
     "name": "getGroupDetails",
@@ -227,6 +203,35 @@
       }
     ],
     "name": "isMember",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "groupId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "debtor",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "creditor",
+        "type": "address"
+      }
+    ],
+    "name": "paid",
     "outputs": [
       {
         "internalType": "bool",
