@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../utils/UserContext'; // Import your UserContext
 import styles from './Home.module.css';
 import ParticleBackground from '@/components/background';
+import { connectWithSSO } from '../../../../squary-fe/src/wagmi';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -23,6 +24,7 @@ const Home = () => {
       return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+
     return  <div>
       <ParticleBackground />
       <div className={styles.navbar}>
@@ -34,6 +36,9 @@ const Home = () => {
           </div>
           <div className={styles.navbar_button}>
             <appkit-button />
+            <button onClick={connectWithSSO}>
+            Connect with SSO
+          </button>
           </div>
         </div>
       </div>
